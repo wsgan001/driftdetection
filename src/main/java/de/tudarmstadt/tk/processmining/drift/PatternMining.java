@@ -50,6 +50,14 @@ public class PatternMining {
         return database;
     }
 
+    /**
+     * Extracts close itemsets from the given database with a support of at least minSupport.
+     *
+     * @param database
+     * @param indexMap
+     * @param minSupport
+     * @return
+     */
     public List<FrequentItemset> getClosedItemsets(Database database, Map<String, Integer> indexMap, double minSupport) {
         List<FrequentItemset> frequentItemsets = new ArrayList<>();
 
