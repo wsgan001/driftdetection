@@ -7,28 +7,28 @@ import java.util.List;
  */
 public class Rule {
 
-    private List<String> leftHandSide;
+    private List<Transition> leftHandSide;
 
-    private List<String> rightHandSide;
+    private List<Transition> rightHandSide;
 
     private double support;
 
     private double confidence;
 
 
-    public List<String> getLeftHandSide() {
+    public List<Transition> getLeftHandSide() {
         return leftHandSide;
     }
 
-    public void setLeftHandSide(List<String> leftHandSide) {
+    public void setLeftHandSide(List<Transition> leftHandSide) {
         this.leftHandSide = leftHandSide;
     }
 
-    public List<String> getRightHandSide() {
+    public List<Transition> getRightHandSide() {
         return rightHandSide;
     }
 
-    public void setRightHandSide(List<String> rightHandSide) {
+    public void setRightHandSide(List<Transition> rightHandSide) {
         this.rightHandSide = rightHandSide;
     }
 

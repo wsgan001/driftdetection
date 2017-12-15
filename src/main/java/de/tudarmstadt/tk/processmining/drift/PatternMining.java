@@ -32,12 +32,12 @@ public class PatternMining {
      * @param indexMap
      * @return
      */
-    public Database getDatabase(Map<LocalDate, Set<String>> dateTransitionMap, Map<String, Integer> indexMap) {
+    public Database getDatabase(Map<LocalDate, Set<Transition>> dateTransitionMap, Map<Transition, Integer> indexMap) {
         Database database = new Database();
 
-        for (Set<String> transitions : dateTransitionMap.values()) {
+        for (Set<Transition> transitions : dateTransitionMap.values()) {
             List<String> items = new ArrayList<>();
-            for (String transition : transitions) {
+            for (Transition transition : transitions) {
                 // convert transition to index
                 Integer index = indexMap.getOrDefault(transition, indexMap.size());
                 indexMap.put(transition, index);
@@ -58,14 +58,14 @@ public class PatternMining {
      * @param minSupport
      * @return
      */
-    public List<FrequentItemset> getClosedItemsets(Database database, Map<String, Integer> indexMap, double minSupport) {
+    public List<FrequentItemset> getClosedItemsets(Database database, Map<Transition, Integer> indexMap, double minSupport) {
         List<FrequentItemset> frequentItemsets = new ArrayList<>();
 
         // store database to disk :(
         Utils.saveDatabase(database, "patterns.txt");
 
         // generate reverse index map
-        Map<Integer, String> mapInversed =
+        Map<Integer, Transition> mapInversed =
                 indexMap.entrySet()
                         .stream()
                         .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
@@ -101,7 +101,7 @@ public class PatternMining {
      * @param minConfidence
      * @return
      */
-    public List<Rule> getTopKRules(Database database, Map<String, Integer> indexMap, int k, double minConfidence) {
+    public List<Rule> getTopKRules(Database database, Map<Transition, Integer> indexMap, int k, double minConfidence) {
         List<Rule> rules = new ArrayList<>();
 
         // execute the top-k rules algorithm and export to file
@@ -114,7 +114,7 @@ public class PatternMining {
         }
 
         // generate reverse index map
-        Map<Integer, String> mapInversed =
+        Map<Integer, Transition> mapInversed =
                 indexMap.entrySet()
                         .stream()
                         .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
@@ -159,8 +159,8 @@ public class PatternMining {
      * @param fileName
      * @return
      */
-    public Map<LocalDate, Set<String>> getDateTransitionMap(String fileName) {
-        HashMap<LocalDate, Set<String>> dateTransitionMap = new HashMap<>();
+    public Map<LocalDate, Set<Transition>> getDateTransitionMap(String fileName) {
+        HashMap<LocalDate, Set<Transition>> dateTransitionMap = new HashMap<>();
 
         // read gantt file
         try (FileReader fr = new FileReader(fileName)) {
@@ -177,14 +177,16 @@ public class PatternMining {
                     LocalDate endDate = parseDate(parsedLine[2]);
                     Double value = Double.parseDouble(parsedLine[3]);
 
+                    Transition tr = new Transition(transition, value);
+
                     // for each date: store the transitions having a drift
                     long days = Period.between(beginDate, endDate).getDays();
 
                     for (int i = 0; i <= days; i++) {
                         LocalDate date = beginDate.plusDays(i);
 
-                        Set<String> transitions = dateTransitionMap.getOrDefault(date, new HashSet<>());
-                        transitions.add(transition);
+                        Set<Transition> transitions = dateTransitionMap.getOrDefault(date, new HashSet<>());
+                        transitions.add(tr);
 
                         dateTransitionMap.put(date, transitions);
                     }

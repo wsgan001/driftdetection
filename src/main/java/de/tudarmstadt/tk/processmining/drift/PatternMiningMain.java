@@ -17,10 +17,10 @@ public class PatternMiningMain {
         PatternMining patternMining = new PatternMining();
 
         // convert gantt to date transition map
-        Map<LocalDate, Set<String>> dateTransitionMap = patternMining.getDateTransitionMap("gantt.txt");
+        Map<LocalDate, Set<Transition>> dateTransitionMap = patternMining.getDateTransitionMap("gantt.txt");
 
         // generate association rules
-        Map<String, Integer> indexMap = new HashMap<>();
+        Map<Transition, Integer> indexMap = new HashMap<>();
 
         Database database = patternMining.getDatabase(dateTransitionMap, indexMap);
         List<Rule> rules = patternMining.getTopKRules(database, indexMap, 100, 0.5);
