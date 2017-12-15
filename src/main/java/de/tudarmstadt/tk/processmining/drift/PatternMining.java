@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -159,8 +160,9 @@ public class PatternMining {
      * @param fileName
      * @return
      */
-    public Map<LocalDate, Set<Transition>> getDateTransitionMap(String fileName) {
+    public DateTransitionMap getDateTransitionMap(String fileName) {
         HashMap<LocalDate, Set<Transition>> dateTransitionMap = new HashMap<>();
+        Set<Transition> transitionSet = new HashSet<>();
 
         // read gantt file
         try (FileReader fr = new FileReader(fileName)) {
@@ -178,9 +180,10 @@ public class PatternMining {
                     Double value = Double.parseDouble(parsedLine[3]);
 
                     Transition tr = new Transition(transition, value);
+                    transitionSet.add(tr);
 
                     // for each date: store the transitions having a drift
-                    long days = Period.between(beginDate, endDate).getDays();
+                    long days = ChronoUnit.DAYS.between(beginDate, endDate);
 
                     for (int i = 0; i <= days; i++) {
                         LocalDate date = beginDate.plusDays(i);
@@ -197,7 +200,7 @@ public class PatternMining {
             logger.log(Level.SEVERE, e.getMessage(), e);
         }
 
-        return dateTransitionMap;
+        return new DateTransitionMap(dateTransitionMap, transitionSet);
     }
 
 }
