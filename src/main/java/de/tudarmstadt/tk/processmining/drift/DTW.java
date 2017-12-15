@@ -28,8 +28,16 @@ import java.util.*;
  */
 public class DTW {
 
-    public static void generateDTWMap(DateTransitionMap dateTransitionMap) {
+    public void exportDTWMap(Map<String, Double> distances, String fileName) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            mapper.writeValue(new File(fileName), distances);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public Map<String, Double> generateDTWMap(DateTransitionMap dateTransitionMap) {
         Map<String, Double> distances = new HashMap<>();
         List<Transition> transitions = new ArrayList<>(dateTransitionMap.getTransitions());
 
@@ -45,22 +53,10 @@ public class DTW {
             }
         }
 
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mapper.writeValue(new File("dtw.txt"), distances);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        for(String tr : distances.keySet()) {
-            if(distances.get(tr) == 0) {
-                System.out.println(String.format("%s ==> %f", tr, distances.get(tr)));
-            }
-        }
-
+        return distances;
     }
 
-    public static void clusterDTW(DateTransitionMap dateTransitionMap) {
+    public void clusterDTW(DateTransitionMap dateTransitionMap) {
         List<Transition> transitions = new ArrayList<>(dateTransitionMap.getTransitions());
 
         int length = 500; // transitions.size();
@@ -101,7 +97,7 @@ public class DTW {
 
     }
 
-    public static TimeWarpInfo getDTW(Map<LocalDate, Set<Transition>> dateTransitionMap, Transition t1, Transition t2) {
+    public TimeWarpInfo getDTW(Map<LocalDate, Set<Transition>> dateTransitionMap, Transition t1, Transition t2) {
         List<TimeSeriesItem> items1 = new ArrayList<>();
         List<TimeSeriesItem> items2 = new ArrayList<>();
 

@@ -3,7 +3,9 @@ package de.tudarmstadt.tk.processmining.drift;
 import ca.pfv.spmf.algorithms.associationrules.TopKRules_and_TNR.Database;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class ExperimentsMain {
@@ -16,15 +18,16 @@ public class ExperimentsMain {
         // convert gantt to date transition map
         DateTransitionMap dateTransitionMap = patternMining.getDateTransitionMap("gantt.txt");
 
-//        DTW.generateDTWMap(dateTransitionMap);
-        DTW.clusterDTW(dateTransitionMap);
+        DTW dtw = new DTW();
+        //        dtw.generateDTWMap(dateTransitionMap);
+        dtw.clusterDTW(dateTransitionMap);
 
         // generate association rules
         Map<Transition, Integer> indexMap = new HashMap<>();
 
         Database database = patternMining.getDatabase(dateTransitionMap.getDateTransitionMap(), indexMap);
 
-        if(false) {
+        if (false) {
             List<Rule> rules = patternMining.getTopKRules(database, indexMap, 100, 0.5);
 
             System.out.println("Association Rules:");
@@ -35,7 +38,7 @@ public class ExperimentsMain {
             System.out.println();
         }
 
-        if(false) {
+        if (false) {
             // FPclose
             List<FrequentItemset> frequentItems = patternMining.getClosedItemsets(database, indexMap, 0.2);
 
