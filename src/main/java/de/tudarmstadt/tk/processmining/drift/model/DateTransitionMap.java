@@ -1,4 +1,4 @@
-package de.tudarmstadt.tk.processmining.drift;
+package de.tudarmstadt.tk.processmining.drift.model;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -9,22 +9,22 @@ import java.util.Set;
  */
 public class DateTransitionMap {
 
-    private Map<LocalDate, Set<Transition>> dateTransitionMap;
+    private Map<LocalDate, Map<Transition, TesseractValue>> dateTransitionMap;
 
     private Set<Transition> transitions;
 
     private Set<Transition> multipleOccurrenceTransitionSet;
 
-    public DateTransitionMap(Map<LocalDate, Set<Transition>> dateTransitionMap, Set<Transition> transitions) {
+    public DateTransitionMap(Map<LocalDate, Map<Transition, TesseractValue>> dateTransitionMap, Set<Transition> transitions) {
         this.setDateTransitionMap(dateTransitionMap);
         this.setTransitions(transitions);
     }
 
-    public Map<LocalDate, Set<Transition>> getDateTransitionMap() {
+    public Map<LocalDate, Map<Transition, TesseractValue>> getDateTransitionMap() {
         return dateTransitionMap;
     }
 
-    public void setDateTransitionMap(Map<LocalDate, Set<Transition>> dateTransitionMap) {
+    public void setDateTransitionMap(Map<LocalDate, Map<Transition, TesseractValue>> dateTransitionMap) {
         this.dateTransitionMap = dateTransitionMap;
     }
 

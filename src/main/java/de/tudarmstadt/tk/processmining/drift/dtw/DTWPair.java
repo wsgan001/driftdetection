@@ -1,11 +1,13 @@
-package de.tudarmstadt.tk.processmining.drift;
+package de.tudarmstadt.tk.processmining.drift.dtw;
 
-import java.util.Objects;
+import de.tudarmstadt.tk.processmining.drift.model.Transition;
+
+import java.io.Serializable;
 
 /**
  * @author Alexander Seeliger on 18.12.2017.
  */
-public class DTWPair {
+public class DTWPair implements Serializable {
 
     private Transition t1;
 
@@ -23,11 +25,16 @@ public class DTWPair {
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof DTWPair) {
-            DTWPair other = (DTWPair)obj;
+        if (obj instanceof DTWPair) {
+            DTWPair other = (DTWPair) obj;
             return other.t1.equals(t1) && other.t2.equals(t2) || other.t1.equals(t2) && other.t2.equals(t1);
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return t1.toString() + " :: " + t2.toString();
     }
 
     public Transition getT1() {

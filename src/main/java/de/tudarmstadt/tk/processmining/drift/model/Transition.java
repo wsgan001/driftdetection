@@ -1,17 +1,16 @@
-package de.tudarmstadt.tk.processmining.drift;
+package de.tudarmstadt.tk.processmining.drift.model;
+
+import java.io.Serializable;
 
 /**
  * @author Alexander Seeliger on 15.12.2017.
  */
-public class Transition {
+public class Transition implements Serializable {
 
     private String transition;
 
-    private double value;
-
-    public Transition(String transition, double value) {
+    public Transition(String transition) {
         this.transition = transition;
-        this.value = value;
     }
 
     @Override
@@ -29,15 +28,7 @@ public class Transition {
 
     @Override
     public String toString() {
-        return transition + " (" + value + ")";
-    }
-
-    public double getValue() {
-        return value;
-    }
-
-    public void setValue(double value) {
-        this.value = value;
+        return transition;
     }
 
     public String getTransition() {

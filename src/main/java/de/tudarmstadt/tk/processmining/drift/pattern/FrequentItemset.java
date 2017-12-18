@@ -1,4 +1,6 @@
-package de.tudarmstadt.tk.processmining.drift;
+package de.tudarmstadt.tk.processmining.drift.pattern;
+
+import de.tudarmstadt.tk.processmining.drift.model.Transition;
 
 import java.util.ArrayList;
 import java.util.Collection;

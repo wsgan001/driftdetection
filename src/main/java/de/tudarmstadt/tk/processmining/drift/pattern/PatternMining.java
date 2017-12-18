@@ -1,10 +1,14 @@
-package de.tudarmstadt.tk.processmining.drift;
+package de.tudarmstadt.tk.processmining.drift.pattern;
 
 import ca.pfv.spmf.algorithms.associationrules.TopKRules_and_TNR.AlgoTopKRules;
 import ca.pfv.spmf.algorithms.associationrules.TopKRules_and_TNR.Database;
 import ca.pfv.spmf.algorithms.frequentpatterns.fpgrowth.AlgoFPClose;
 import ca.pfv.spmf.patterns.itemset_array_integers_with_count.Itemset;
 import ca.pfv.spmf.patterns.itemset_array_integers_with_count.Itemsets;
+import de.tudarmstadt.tk.processmining.drift.*;
+import de.tudarmstadt.tk.processmining.drift.model.DateTransitionMap;
+import de.tudarmstadt.tk.processmining.drift.model.TesseractValue;
+import de.tudarmstadt.tk.processmining.drift.model.Transition;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -32,12 +36,12 @@ public class PatternMining {
      * @param indexMap
      * @return
      */
-    public Database getDatabase(Map<LocalDate, Set<Transition>> dateTransitionMap, Map<Transition, Integer> indexMap) {
+    public Database getDatabase(Map<LocalDate, Map<Transition, TesseractValue>> dateTransitionMap, Map<Transition, Integer> indexMap) {
         Database database = new Database();
 
-        for (Set<Transition> transitions : dateTransitionMap.values()) {
+        for (Map<Transition, TesseractValue> transitions : dateTransitionMap.values()) {
             List<String> items = new ArrayList<>();
-            for (Transition transition : transitions) {
+            for (Transition transition : transitions.keySet()) {
                 // convert transition to index
                 Integer index = indexMap.getOrDefault(transition, indexMap.size());
                 indexMap.put(transition, index);
@@ -160,7 +164,7 @@ public class PatternMining {
      * @return
      */
     public DateTransitionMap getDateTransitionMap(String fileName) {
-        HashMap<LocalDate, Set<Transition>> dateTransitionMap = new HashMap<>();
+        HashMap<LocalDate, Map<Transition, TesseractValue>> dateTransitionMap = new HashMap<>();
         Set<Transition> transitionSet = new HashSet<>();
         Set<Transition> multipleOccurrenceTransitionSet  = new HashSet<>();
 
@@ -178,8 +182,9 @@ public class PatternMining {
                     LocalDate beginDate = parseDate(parsedLine[1]);
                     LocalDate endDate = parseDate(parsedLine[2]);
                     Double value = Double.parseDouble(parsedLine[3]);
+                    Double count = Double.parseDouble(parsedLine[4]);
 
-                    Transition tr = new Transition(transition, value);
+                    Transition tr = new Transition(transition);
                     if(transitionSet.contains(tr)) {
                         multipleOccurrenceTransitionSet.add(tr);
                     }
@@ -191,8 +196,8 @@ public class PatternMining {
                     for (int i = 0; i <= days; i++) {
                         LocalDate date = beginDate.plusDays(i);
 
-                        Set<Transition> transitions = dateTransitionMap.getOrDefault(date, new HashSet<>());
-                        transitions.add(tr);
+                        Map<Transition, TesseractValue> transitions = dateTransitionMap.getOrDefault(date, new HashMap<>());
+                        transitions.put(tr, new TesseractValue(value, count));
 
                         dateTransitionMap.put(date, transitions);
                     }
