@@ -8,18 +8,8 @@ import com.fastdtw.timeseries.TimeSeriesItem;
 import com.fastdtw.timeseries.TimeSeriesPoint;
 import com.fastdtw.util.DistanceFunction;
 import com.fastdtw.util.EuclideanDistance;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import smile.clustering.HierarchicalClustering;
-import smile.clustering.linkage.SingleLinkage;
-import smile.clustering.linkage.WardLinkage;
-import sun.nio.cs.StandardCharsets;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -28,27 +18,26 @@ import java.util.*;
  */
 public class DTW {
 
-    public void exportDTWMap(Map<String, Double> distances, String fileName) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mapper.writeValue(new File(fileName), distances);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    /**
+     * Calculate the dynamic time warping map for each pair of multiple occurring transitions.
+     *
+     * @param dateTransitionMap
+     * @return
+     */
+    public DTWMap generateDTWMap(DateTransitionMap dateTransitionMap) {
+        DTWMap distances = new DTWMap();
+        List<Transition> transitions = new ArrayList<>(dateTransitionMap.getMultipleOccurrenceTransitionSet());
 
-    public Map<String, Double> generateDTWMap(DateTransitionMap dateTransitionMap) {
-        Map<String, Double> distances = new HashMap<>();
-        List<Transition> transitions = new ArrayList<>(dateTransitionMap.getTransitions());
+        int length = transitions.size();
 
-        for(int i = 0; i < transitions.size(); i++) {
-            for(int j = i; j < transitions.size(); j++) {
+        for (int i = 0; i < length; i++) {
+            for (int j = i; j < length; j++) {
 
                 Transition t1 = transitions.get(i);
                 Transition t2 = transitions.get(j);
 
                 TimeWarpInfo timeWarpInfo = getDTW(dateTransitionMap.getDateTransitionMap(), t1, t2);
-                distances.put(t1.getTransition() + " :: " + t2.getTransition(), timeWarpInfo.getDistance());
+                distances.put(new DTWPair(t1, t2), timeWarpInfo.getDistance());
 
             }
         }
@@ -56,81 +45,106 @@ public class DTW {
         return distances;
     }
 
-    public void clusterDTW(DateTransitionMap dateTransitionMap) {
-        List<Transition> transitions = new ArrayList<>(dateTransitionMap.getTransitions());
+    /**
+     * Very naive way to cluster same occurring patterns.
+     *
+     * @param transitionMap
+     * @param dtwMap
+     */
+    public void clusterDTW(DateTransitionMap transitionMap, DTWMap dtwMap) {
+        List<Transition> transitions = new ArrayList<>(transitionMap.getMultipleOccurrenceTransitionSet());
 
-        int length = 500; // transitions.size();
+        int length = transitions.size();
 
         double[][] distances = new double[length][length];
-        String[] strings = new String[length];
 
-        for(int i = 0; i < length; i++) {
-            strings[i] = transitions.get(i).getTransition();
-
-            for(int j = i; j < length; j++) {
+        for (int i = 0; i < length; i++) {
+            for (int j = i; j < length; j++) {
 
                 Transition t1 = transitions.get(i);
                 Transition t2 = transitions.get(j);
 
-                TimeWarpInfo timeWarpInfo = getDTW(dateTransitionMap.getDateTransitionMap(), t1, t2);
-                distances[i][j] = timeWarpInfo.getDistance();
+                double distance = dtwMap.get(new DTWPair(t1, t2));
+                distances[i][j] = distance;
                 distances[j][i] = distances[i][j];
             }
         }
 
-//        HierarchicalClustering algorithm = new HierarchicalClustering(new SingleLinkage(distances));
-//        int[] clusterMap = algorithm.partition(4d);
-//
-//        Map<Integer, Set<Transition>> clusters = new HashMap<>();
-//        for(int i = 0; i < length; i++) {
-//            Set<Transition> transitionSet = clusters.getOrDefault(clusterMap[i], new HashSet<>());
-//            transitionSet.add(transitions.get(i));
-//            clusters.put(clusterMap[i], transitionSet);
-//        }
-//
-//        int k = 0;
-//        for(Integer i : clusters.keySet()) {
-//            if(clusters.get(i).size() > 1) {
-//                k++;
-//            }
-//        }
+        List<List<Transition>> clusters = new ArrayList<>();
+        List<Transition> visited = new ArrayList<>();
 
+        for (int i = 0; i < distances.length; i++) {
+            Transition t1 = transitions.get(i);
+
+            if (visited.contains(t1)) {
+                continue;
+            }
+
+            List<Transition> cluster = new ArrayList<>();
+            for (int j = i + 1; j < distances.length; j++) {
+
+                if (distances[i][j] == 0) {
+                    Transition t2 = transitions.get(j);
+
+                    if (!visited.contains(t2)) {
+                        cluster.add(t2);
+                        visited.add(t2);
+                    }
+                }
+
+            }
+
+            if (cluster.size() > 0) {
+                cluster.add(t1);
+                visited.add(t1);
+
+                clusters.add(cluster);
+            }
+        }
     }
 
+    /**
+     * Returns the dynamic time warping info for a given pair of transitions.
+     *
+     * @param dateTransitionMap
+     * @param t1
+     * @param t2
+     * @return
+     */
     public TimeWarpInfo getDTW(Map<LocalDate, Set<Transition>> dateTransitionMap, Transition t1, Transition t2) {
         List<TimeSeriesItem> items1 = new ArrayList<>();
         List<TimeSeriesItem> items2 = new ArrayList<>();
 
-        LocalDate beginDate = LocalDate.of(2016, 1, 1);
-        LocalDate endDate = LocalDate.of(2017, 1, 31);
+        LocalDate beginDate = LocalDate.of(2012, 10, 1);
+        LocalDate endDate = LocalDate.of(2015, 10, 31);
 
         long days = ChronoUnit.DAYS.between(beginDate, endDate);
         Set<Transition> emptySet = new HashSet<>();
 
-        for(int i = 0; i <= days; i++) {
+        for (int i = 0; i <= days; i++) {
             LocalDate date = beginDate.plusDays(i);
 
             // t1
-            if(dateTransitionMap.getOrDefault(date, emptySet).contains(t1)) {
-                TimeSeriesPoint point = new TimeSeriesPoint(new double[] { 1 });
+            if (dateTransitionMap.getOrDefault(date, emptySet).contains(t1)) {
+                TimeSeriesPoint point = new TimeSeriesPoint(new double[]{1});
                 TimeSeriesItem item = new TimeSeriesItem(i, point);
 
                 items1.add(item);
             } else {
-                TimeSeriesPoint point = new TimeSeriesPoint(new double[] { 0 });
+                TimeSeriesPoint point = new TimeSeriesPoint(new double[]{0});
                 TimeSeriesItem item = new TimeSeriesItem(i, point);
 
                 items1.add(item);
             }
 
             // t2
-            if(dateTransitionMap.getOrDefault(date, emptySet).contains(t2)) {
-                TimeSeriesPoint point = new TimeSeriesPoint(new double[] { 1 });
+            if (dateTransitionMap.getOrDefault(date, emptySet).contains(t2)) {
+                TimeSeriesPoint point = new TimeSeriesPoint(new double[]{1});
                 TimeSeriesItem item = new TimeSeriesItem(i, point);
 
                 items2.add(item);
             } else {
-                TimeSeriesPoint point = new TimeSeriesPoint(new double[] { 0 });
+                TimeSeriesPoint point = new TimeSeriesPoint(new double[]{0});
                 TimeSeriesItem item = new TimeSeriesItem(i, point);
 
                 items2.add(item);

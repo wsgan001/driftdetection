@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Level;
@@ -163,6 +162,7 @@ public class PatternMining {
     public DateTransitionMap getDateTransitionMap(String fileName) {
         HashMap<LocalDate, Set<Transition>> dateTransitionMap = new HashMap<>();
         Set<Transition> transitionSet = new HashSet<>();
+        Set<Transition> multipleOccurrenceTransitionSet  = new HashSet<>();
 
         // read gantt file
         try (FileReader fr = new FileReader(fileName)) {
@@ -180,6 +180,9 @@ public class PatternMining {
                     Double value = Double.parseDouble(parsedLine[3]);
 
                     Transition tr = new Transition(transition, value);
+                    if(transitionSet.contains(tr)) {
+                        multipleOccurrenceTransitionSet.add(tr);
+                    }
                     transitionSet.add(tr);
 
                     // for each date: store the transitions having a drift
@@ -200,7 +203,10 @@ public class PatternMining {
             logger.log(Level.SEVERE, e.getMessage(), e);
         }
 
-        return new DateTransitionMap(dateTransitionMap, transitionSet);
+        DateTransitionMap result = new DateTransitionMap(dateTransitionMap, transitionSet);
+        result.setMultipleOccurrenceTransitionSet(multipleOccurrenceTransitionSet);
+
+        return result;
     }
 
 }

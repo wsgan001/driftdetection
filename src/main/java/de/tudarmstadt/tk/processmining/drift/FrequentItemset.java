@@ -14,7 +14,6 @@ public class FrequentItemset extends ArrayList<Transition> {
         super(items);
     }
 
-
     public int getSupport() {
         return support;
     }

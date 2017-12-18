@@ -12,15 +12,16 @@ public class ExperimentsMain {
 
     private static Logger logger = Logger.getLogger(ExperimentsMain.class.getName());
 
-    public static void main(String[] args) throws JsonProcessingException {
+    public static void main(String[] args) {
         PatternMining patternMining = new PatternMining();
 
         // convert gantt to date transition map
         DateTransitionMap dateTransitionMap = patternMining.getDateTransitionMap("gantt.txt");
 
         DTW dtw = new DTW();
-        //        dtw.generateDTWMap(dateTransitionMap);
-        dtw.clusterDTW(dateTransitionMap);
+
+        DTWMap dtwMap = dtw.generateDTWMap(dateTransitionMap);
+        dtw.clusterDTW(dateTransitionMap, dtwMap);
 
         // generate association rules
         Map<Transition, Integer> indexMap = new HashMap<>();

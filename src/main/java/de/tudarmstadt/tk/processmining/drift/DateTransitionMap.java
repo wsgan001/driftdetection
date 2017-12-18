@@ -13,6 +13,8 @@ public class DateTransitionMap {
 
     private Set<Transition> transitions;
 
+    private Set<Transition> multipleOccurrenceTransitionSet;
+
     public DateTransitionMap(Map<LocalDate, Set<Transition>> dateTransitionMap, Set<Transition> transitions) {
         this.setDateTransitionMap(dateTransitionMap);
         this.setTransitions(transitions);
@@ -32,5 +34,13 @@ public class DateTransitionMap {
 
     public void setTransitions(Set<Transition> transitions) {
         this.transitions = transitions;
+    }
+
+    public Set<Transition> getMultipleOccurrenceTransitionSet() {
+        return multipleOccurrenceTransitionSet;
+    }
+
+    public void setMultipleOccurrenceTransitionSet(Set<Transition> multipleOccurrenceTransitionSet) {
+        this.multipleOccurrenceTransitionSet = multipleOccurrenceTransitionSet;
     }
 }
