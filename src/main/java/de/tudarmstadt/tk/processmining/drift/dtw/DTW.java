@@ -154,14 +154,10 @@ public class DTW {
         if (value != null) {
             // retrieve average tesseract value (I guess: Gantt-Value / Count / Count)
             TimeSeriesPoint point = new TimeSeriesPoint(new double[]{value.getValue() / value.getCount() / value.getCount()});
-            TimeSeriesItem item = new TimeSeriesItem(i, point);
-
-            return item;
+            return new TimeSeriesItem(i, point);
         } else {
             TimeSeriesPoint point = new TimeSeriesPoint(new double[]{0});
-            TimeSeriesItem item = new TimeSeriesItem(i, point);
-
-            return item;
+            return new TimeSeriesItem(i, point);
         }
     }
 }
